@@ -30,7 +30,7 @@ jobs:
           tags: omniroute-local:kgw
           load: true
           build-args: |
-            OMNIROUTE_BUILD_MEMORY_MB=6144
+            OMNIROUTE_BUILD_MEMORY_MB=8192
             OMNIROUTE_BUILD_WORKERS=2
             OMNIROUTE_USE_TURBOPACK=0
           cache-from: type=gha
