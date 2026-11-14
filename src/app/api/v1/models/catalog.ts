@@ -98,6 +98,11 @@ import {
 import { getSourcedTokenLimit, getTokenLimit } from "@omniroute/open-sse/services/contextManager";
 import { extractApiKey } from "@/sse/services/auth";
 import type { ComboModelStep } from "@/lib/combos/steps";
+import { fetchKiloAiGatewayFreeModels } from "@/lib/providerModels/kiloAiGatewayDiscovery";
+import {
+  getCcAliasProviderSetting,
+  setCcAliasProviderSetting,
+} from "@/lib/db/ccDiscoveryAliases";
 import {
   type CustomModelEntry,
   type ComboCatalogTarget,
@@ -2025,6 +2030,61 @@ async function buildUnifiedModelsResponseCore(
           ...(visionFields || {}),
         });
       }
+    }
+
+    // ── Kilo AI Gateway (kgw/) — modelos gratuitos dinámicos ──────────────────
+    // Publica los modelos gratuitos de Kilo AI Gateway (ai-gateway.kilo.ai)
+    // descubiertos dinámicamente desde su catálogo público. Cada modelo se
+    // publica con su identificador original (sin prefijo) para que el enrutado
+    // lo conserve intacto. Solo se incluyen modelos confirmados como gratuitos
+    // por los metadatos del catálogo (isFree === true y pricing 0/0).
+    try {
+      // Habilitar el alias de descubrimiento Claude Code para el proveedor kgw/
+      // exclusivamente (no globalmente). Escribe una sola vez en la base de datos;
+      // llamadas posteriores son no-op.
+      if (getCcAliasProviderSetting("kgw") !== "on") {
+        setCcAliasProviderSetting("kgw", "on");
+      }
+
+      const kgwFreeModels = await fetchKiloAiGatewayFreeModels();
+      for (const m of kgwFreeModels) {
+        await maybeYieldCatalogBuild();
+        // Publicar entrada kgw/<id> (identificador original conservado).
+        if (models.some((existing) => existing.id === m.prefixedId)) continue;
+        models.push({
+          id: m.prefixedId,
+          object: "model",
+          created: timestamp,
+          owned_by: "kilo-ai-gateway",
+          permission: [],
+          root: m.id,
+          parent: null,
+          context_length: m.contextLength,
+          ...(m.pricing.prompt !== null || m.pricing.completion !== null
+            ? {
+                pricing: {
+                  prompt: m.pricing.prompt,
+                  completion: m.pricing.completion,
+                },
+              }
+            : {}),
+          ...(m.isFree !== undefined ? { isFree: m.isFree } : {}),
+          ...(m.supportedParameters.length > 0
+            ? { supported_parameters: m.supportedParameters }
+            : {}),
+          ...(m.inputModalities.length > 0
+            ? { input_modalities: m.inputModalities }
+            : {}),
+          ...(m.outputModalities.length > 0
+            ? { output_modalities: m.outputModalities }
+            : {}),
+        });
+      }
+    } catch (e) {
+      // Si el catálogo de Kilo AI Gateway no está disponible, omitir silenciosamente.
+      // Los modelos kgw/ simplemente no aparecerán en el catálogo hasta que se
+      // restablezca la conexión.
+      console.log("[catalog] Could not fetch Kilo AI Gateway free models:", e);
     }
 
     // Filter by API key permissions if requested

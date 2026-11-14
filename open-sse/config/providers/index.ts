@@ -179,6 +179,7 @@ import { alibabaProvider } from "./registry/alibaba/index.ts";
 import { alibaba_cnProvider } from "./registry/alibaba/cn/index.ts";
 import { doubaoProvider } from "./registry/doubao/index.ts";
 import { doubao_webProvider } from "./registry/doubao/web/index.ts";
+import { kiloAiGatewayProvider } from "./registry/kilo-ai-gateway/index.ts";
 import { kilo_gatewayProvider } from "./registry/kilo-gateway/index.ts";
 import { bailian_coding_planProvider } from "./registry/bailian-coding-plan/index.ts";
 import { gigachatProvider } from "./registry/gigachat/index.ts";
@@ -469,6 +470,7 @@ export const REGISTRY: Record<string, RegistryEntry> = {
   "alibaba-cn": alibaba_cnProvider,
   doubao: doubaoProvider,
   "doubao-web": doubao_webProvider,
+  "kilo-ai-gateway": kiloAiGatewayProvider,
   "kilo-gateway": kilo_gatewayProvider,
   "bailian-coding-plan": bailian_coding_planProvider,
   gigachat: gigachatProvider,

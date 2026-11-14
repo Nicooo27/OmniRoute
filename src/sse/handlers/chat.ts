@@ -29,6 +29,7 @@ import {
   isDailyQuotaExhausted,
 } from "@omniroute/open-sse/services/accountFallback.ts";
 import { getCombo, getComboForModel, getModelInfo } from "../services/model";
+import { evaluateKgwRouting } from "../../lib/providerModels/kiloAiGatewayRoutingGuard";
 import { stripContextWindowSuffix } from "@omniroute/open-sse/services/model.ts";
 import { resolveBareModelToConnectionDefault } from "@omniroute/open-sse/services/model.ts";
 import { errorResponse } from "@omniroute/open-sse/utils/error.ts";
@@ -758,6 +759,29 @@ async function handleChatImplementation(
         correlationId: reqId,
       }
     );
+  }
+
+  // Guarda de enrutamiento kilo-ai-gateway (kgw/): solo se permiten modelos
+  // que el catalogo de Kilo AI Gateway identifique inequívocamente como
+  // gratuitos. Los modelos de pago y los no identificados como gratuitos se
+  // bloquean en modalidad anonima. Esta guarda es independiente de kc/,
+  // kilocode/ y cualquier otro proveedor.
+  if (typeof modelStr === "string" && modelStr.startsWith("kgw/")) {
+    const kgwDecision = await evaluateKgwRouting(modelStr);
+    if (!kgwDecision.allowed) {
+      log.warn("CHAT", `Rejecting kgw/ model (not free): ${modelStr}`);
+      return logHandlerRejection(
+        errorResponse(HTTP_STATUS.BAD_REQUEST, kgwDecision.message),
+        {
+          path: new URL(request.url).pathname,
+          model: modelStr,
+          requestBody: body ?? null,
+          apiKeyId: null,
+          apiKeyName: null,
+          correlationId: reqId,
+        }
+      );
+    }
   }
 
   // A trusted endpoint-tag mismatch is a local client error, not a provider or

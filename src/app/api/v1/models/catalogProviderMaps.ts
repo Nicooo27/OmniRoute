@@ -13,6 +13,7 @@ export const FALLBACK_ALIAS_TO_PROVIDER = {
   cx: "codex",
   gh: "github",
   kc: "kilocode",
+  kgw: "kilo-ai-gateway",
   kmc: "kimi-coding",
   kr: "kiro",
 };

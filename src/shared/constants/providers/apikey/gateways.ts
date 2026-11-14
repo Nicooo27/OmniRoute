@@ -747,6 +747,19 @@ export const APIKEY_PROVIDERS_GATEWAYS = {
     website: "https://kilo.ai",
     passthroughModels: true,
   },
+  "kilo-ai-gateway": {
+    id: "kilo-ai-gateway",
+    serviceKinds: ["llm"],
+    alias: "kgw",
+    name: "Kilo AI Gateway",
+    icon: "hub",
+    color: "#2E7D32",
+    textIcon: "KGW",
+    website: "https://kilo.ai",
+    passthroughModels: true,
+    authHint:
+      "Acceso anonimo gratuito a Kilo AI Gateway (ai-gateway.kilo.ai/api/v1). Solo se enrutan modelos marcados como gratuitos en el catalogo publico; los modelos de pago quedan bloqueados en modalidad anonima.",
+  },
   wafer: {
     id: "wafer",
     serviceKinds: ["llm"],

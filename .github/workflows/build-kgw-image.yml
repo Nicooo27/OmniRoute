@@ -1,0 +1,50 @@
+name: Build OmniRoute KGW image
+
+on:
+  push:
+    branches:
+      - "kgw/loop13-16-v3.8.52"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build OmniRoute
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          target: runner-base
+          platforms: linux/amd64
+          tags: omniroute-local:kgw
+          load: true
+          build-args: |
+            OMNIROUTE_BUILD_MEMORY_MB=6144
+            OMNIROUTE_BUILD_WORKERS=1
+            OMNIROUTE_USE_TURBOPACK=0
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Export Docker image
+        run: |
+          docker save omniroute-local:kgw | gzip -1 > omniroute-kgw-linux-amd64.tar.gz
+          ls -lh omniroute-kgw-linux-amd64.tar.gz
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: omniroute-kgw-linux-amd64
+          path: omniroute-kgw-linux-amd64.tar.gz
+          if-no-files-found: error
+          retention-days: 3
