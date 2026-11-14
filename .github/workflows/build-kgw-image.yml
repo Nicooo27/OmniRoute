@@ -31,7 +31,7 @@ jobs:
           load: true
           build-args: |
             OMNIROUTE_BUILD_MEMORY_MB=6144
-            OMNIROUTE_BUILD_WORKERS=1
+            OMNIROUTE_BUILD_WORKERS=2
             OMNIROUTE_USE_TURBOPACK=0
           cache-from: type=gha
           cache-to: type=gha,mode=max
