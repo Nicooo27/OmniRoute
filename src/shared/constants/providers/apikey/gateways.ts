@@ -751,6 +751,7 @@ export const APIKEY_PROVIDERS_GATEWAYS = {
     id: "kilo-ai-gateway",
     serviceKinds: ["llm"],
     alias: "kgw",
+    anonymousFallback: true,
     name: "Kilo AI Gateway",
     icon: "hub",
     color: "#2E7D32",
